@@ -26,17 +26,29 @@ app.get("/about", (req, res) => {
 
 //set up route to shop page
 app.get("/shop", (req, res) => {
-  res.send("TODO: get all items who have published==true");
+  data.getPublishedItems().then(function(publishedItems){
+    res.json(publishedItems);
+  }).catch(function(err){
+    res.json({"message": err})
+  });
 });
 
 //set up route to items page
 app.get("/items", (req, res) => {
-  res.send("TODO: get all items");
+  data.getAllItems().then(function(items){
+    res.json(items);
+  }).catch(function(err){
+    res.json({"message": err});
+  });
 });
 
 //set up route to categories page
 app.get("/categories", (req, res) => {
-  res.send("TODO: get all categories");
+  data.getCategories().then(function(categories){
+    res.json(categories);
+  }).catch(function(err){
+res.json({"message": err});
+  });
 });
 
 //set up for no matching route
