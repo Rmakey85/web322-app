@@ -44,5 +44,13 @@ app.use((req, res) => {
   res.status(404).send("Page Not Found" );
 });
 
-app.listen(HTTP_PORT, onHTTPSTART);
+data.initialize()
+.then(function(){
+  app.listen(HTTP_PORT, onHTTPSTART);
+})
+.catch(function(err){
+ console.log(err);
+});
+
+
 
