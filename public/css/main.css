@@ -1,0 +1,22 @@
+
+  @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,300;0,400;0,700;1,400&display=swap');
+
+body {
+
+
+font-family: 'Roboto Mono', monospace;
+  color: #2b313f;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+font-weight: 700;
+  color: #B10DC9;
+}
+.navbar{
+    background: #B10DC9;
+}
