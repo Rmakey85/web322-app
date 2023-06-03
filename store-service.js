@@ -47,7 +47,13 @@ module.exports.getPublishedItems = function(){
                     publishedItems.push(value);
                 }
             });
-            resolve(publishedItems);
+            
+            if(publishedItems.length==0){
+                reject("no results returned");
+            }else{
+                resolve(publishedItems);
+            }
+            
         }
     })
 }

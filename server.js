@@ -60,7 +60,7 @@ app.get("/categories", (req, res) => {
   data.getCategories().then(function(categories){
     res.json(categories);
   }).catch(function(err){
-res.json({"message": err});
+    res.json({"message": err});
   });
 });
 
