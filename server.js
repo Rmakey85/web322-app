@@ -3,9 +3,9 @@
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source 
 *  (including 3rd party web sites) or distributed to other students.
 * 
-*  Name: ______Razia Sultana Makey______ Student ID: _176841211__ Date: ____2023-06-02____
+*  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-06-02
 *
-*  Online (Cyclic) Link: ________________________________________________________
+*  Online (Cyclic) Link: https://good-blue-fox-garb.cyclic.app/about
 *
 ********************************************************************************/ 
 
