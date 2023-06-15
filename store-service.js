@@ -67,3 +67,16 @@ module.exports.getCategories = function(){
         }
     });
 }
+
+module.exports.addItem = function(itemData){
+    return new Promise((resolve,reject)=>{
+        if(typeof itemData.published === 'undefined'){
+            itemData.published = false;
+        }else{
+            itemData.published = true; 
+        }
+        itemData["id"] = items.length+1;
+        items.push(itemData);
+        resolve(itemData);
+    });
+}

@@ -12,12 +12,22 @@
 
 
 var express = require("express");
+const multer = require("multer");
+const cloudinary  = require("cloudinary").v2;
+const streamifier  = require("streamifier");
 const data = require("./store-service");
 const path = require("path");
 
 var app = express();
 
 const HTTP_PORT = process.env.PORT || 8080;
+
+cloudinary.config({ 
+  cloud_name: 'ddytkxlg6', 
+  api_key: '215327768878866', 
+  api_secret: 'b2dY0kESzf7JffsH_r4ZQ00JTKA' 
+});
+const upload = multer(); 
 
 app.use(express.static("public"));
 
@@ -55,6 +65,76 @@ app.get("/items", (req, res) => {
   });
 });
 
+//set up route to Add Item page
+app.get("/items/add", (req, res) => {
+  res.sendFile(path.join(__dirname, "/views/addItem.html"));
+});
+
+app.post("/items/add", upload.single("featureImage"), (req, res) => {
+
+    if(req.file){
+      let streamUpload = (req) => {
+          return new Promise((resolve, reject) => {
+              let stream = cloudinary.uploader.upload_stream(
+                  (error, result) => {
+                      if (result) {
+                          resolve(result);
+                      } else {
+                          reject(error);
+                      }
+                  }
+              );
+
+              streamifier.createReadStream(req.file.buffer).pipe(stream);
+          });
+      };
+
+      async function upload(req) {
+          let result = await streamUpload(req);
+          console.log(result);
+          return result;
+      }
+
+      upload(req).then((uploaded)=>{
+          processItem( uploaded.url);
+      });
+  }else{
+    
+      processItem("");
+  }
+
+  function processItem(imageUrl){
+
+    if(typeof imageUrl !== 'undefined'){
+      req.body.featureImage = imageUrl; 
+    }
+
+    // Create a new Date object for the current date
+    const currentDate = new Date();
+
+    // Extract the year, month, and day from the Date object
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+
+    // Create the formatted date string
+    const postDate = `${year}-${month}-${day}`;
+    const itemData = {
+      "category":req.body.category,
+      "postDate":postDate,
+      "featureImage":req.body.featureImage,
+      "price":req.body.price,
+      "title":req.body.title,
+      "body":req.body.body,
+      "published":req.body.published
+    };
+    console.log(itemData);
+    data.addItem(itemData).then((addedItem)=>{
+      res.redirect("/items");
+    });
+  } 
+});
+
 //set up route to categories page
 app.get("/categories", (req, res) => {
   data.getCategories().then(function(categories){
@@ -76,6 +156,4 @@ data.initialize()
 .catch(function(err){
  console.log(err);
 });
-
-
 
