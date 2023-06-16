@@ -56,13 +56,40 @@ app.get("/shop", (req, res) => {
   });
 });
 
-//set up route to items page
+//set up route to items page along with filters
 app.get("/items", (req, res) => {
-  data.getAllItems().then(function(items){
-    res.json(items);
-  }).catch(function(err){
-    res.json({"message": err});
-  });
+
+  //console.log(req.query);
+
+  const category = req.query.category;
+  const minDateStr = req.query.minDate;
+
+  if(typeof category != 'undefined'){
+    //filter items by category
+    data.getItemsByCategory(category).then(function(items){
+      res.json(items);
+    }).catch(function(err){
+      res.json({"message": err});
+    });
+
+  }else if(typeof minDateStr != 'undefined'){
+    //filter items by date
+    data.getItemsByMinDate(minDateStr).then(function(items){
+      res.json(items);
+    }).catch(function(err){
+      res.json({"message": err});
+    });
+
+  }else{
+    //show all
+    data.getAllItems().then(function(items){
+      res.json(items);
+    }).catch(function(err){
+      res.json({"message": err});
+    });
+  }
+
+
 });
 
 //set up route to Add Item page
@@ -133,6 +160,17 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
       res.redirect("/items");
     });
   } 
+});
+
+
+// return specific item
+app.get('/item/:itemId', (req, res) => {
+  //console.log(req.params);
+  data.getItemById(req.params.itemId).then(function(item){
+    res.json(item);
+  }).catch(function(err){
+    res.json({"message": err});
+  });
 });
 
 //set up route to categories page

@@ -80,3 +80,51 @@ module.exports.addItem = function(itemData){
         resolve(itemData);
     });
 }
+
+module.exports.getItemsByCategory = function(categoryId){
+    return new Promise((resolve,reject)=>{
+
+        const filteredItemsByCategory = items.filter(currentItem => currentItem.category == categoryId);
+
+        if(filteredItemsByCategory.length==0){
+            reject("no results returned");
+        }else{
+            resolve(filteredItemsByCategory);
+        }
+    });
+}
+
+module.exports.getItemsByMinDate = function(minDateStr){
+    return new Promise((resolve,reject)=>{
+
+        const filteredItemsByMinDate = [];
+
+        for(let i=0; i<items.length; i++){
+            if(new Date(items[i].postDate) >= new Date(minDateStr)){
+                filteredItemsByMinDate.push(items[i]);
+            }            
+        }
+
+        if(filteredItemsByMinDate.length==0){
+            reject("no results returned");
+        }else{
+            resolve(filteredItemsByMinDate);
+        }
+    });
+}
+
+module.exports.getItemById = function(itemId){
+    return new Promise((resolve,reject)=>{
+
+        const foundItem = items.find(currentItem => currentItem.id == itemId);
+//console.log({itemId, foundItem});
+
+        if(typeof foundItem === 'undefined'){
+            reject("no result returned");
+        }else{
+            resolve(foundItem);
+        }
+            
+
+    })
+}
