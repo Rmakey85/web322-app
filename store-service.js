@@ -94,6 +94,23 @@ module.exports.getItemsByCategory = function(categoryId){
     });
 }
 
+module.exports.getPublishedItemsByCategory = function(categoryId){
+
+    return new Promise((resolve,reject)=>{
+
+        const filteredItems = items.filter(currentItem => {
+            return (currentItem.category == categoryId && currentItem.published==true);
+        });
+
+
+        if(filteredItems.length==0){
+            reject("no results returned");
+        }else{
+            resolve(filteredItems);
+        }
+    });
+}
+
 module.exports.getItemsByMinDate = function(minDateStr){
     return new Promise((resolve,reject)=>{
 
