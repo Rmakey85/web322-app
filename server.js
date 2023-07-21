@@ -1,9 +1,9 @@
 /*********************************************************************************
-*  WEB322 – Assignment 04
+*  WEB322 – Assignment 05
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source 
 *  (including 3rd party web sites) or distributed to other students.
 * 
-*  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-07-07
+*  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-07-21
 *
 *  Online (Cyclic) Link: https://good-blue-fox-garb.cyclic.app/shop
 *
@@ -18,6 +18,7 @@ const streamifier  = require("streamifier");
 const data = require("./store-service");
 const path = require("path");
 const exphbs = require('express-handlebars');
+const { Console } = require("console");
 
 
 var app = express();
@@ -44,6 +45,12 @@ app.engine('.hbs', exphbs.engine({
       } else {
           return options.fn(this);
       }
+  },
+  formatDate: function(dateObj){
+    let year = dateObj.getFullYear();
+    let month = (dateObj.getMonth() + 1).toString();
+    let day = dateObj.getDate().toString();
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2,'0')}`;
   }
   }
 }));
@@ -101,7 +108,6 @@ app.get("/shop", async (req, res) => {
       // Obtain the published "items"
       items = await data.getPublishedItems();
     }
-
     // sort the published items by postDate
     items.sort((a, b) => new Date(b.postDate) - new Date(a.postDate));
 
@@ -112,6 +118,7 @@ app.get("/shop", async (req, res) => {
     viewData.items = items;
     viewData.item = item;
   } catch (err) {
+
     viewData.message = "no results";
   }
 
@@ -182,45 +189,58 @@ app.get('/shop/:id', async (req, res) => {
 });
 
 //set up route to items page along with filters
-app.get("/items", (req, res) => {
+app.get("/items", async (req, res) => {
 
-  //console.log(req.query);
+  console.log("/items");
 
   const category = req.query.category;
   const minDateStr = req.query.minDate;
 
-  if(typeof category != 'undefined'){
-    //filter items by category
-    data.getItemsByCategory(category).then(function(items){
-      res.render("items", {items: items});
-    }).catch(function(err){
+  let items = [];
 
-      res.render("items", {"message": err});
-    });
+  try{
 
-  }else if(typeof minDateStr != 'undefined'){
-    //filter items by date
-    data.getItemsByMinDate(minDateStr).then(function(items){
-      res.render("items", {items: items});
-    }).catch(function(err){
-      res.render("items", {"message": err});
-    });
+    if(typeof category != 'undefined'){
 
-  }else{
-    //show all
-    data.getAllItems().then(function(items){
-      res.render("items", {items: items});
-    }).catch(function(err){
-      res.render("items", {"message": err});
-    });
+      //filter items by category
+      items = await data.getItemsByCategory(category);
+
+    }else if(typeof minDateStr != 'undefined'){
+
+      //filter items by date
+      items = await data.getItemsByMinDate(minDateStr);
+  
+    }else{
+      //show all items
+      items = await data.getAllItems();
+    }
+
+   // console.log(items);
+
+    if(items.length>0)
+      res.render("items", { items: items });
+    else
+      res.render("items", { message: "no results" });
+
+  }catch(err){
+    console.log(err);
+    res.render("items", { message: "no results" });
   }
-
-
 });
 
+//updated
 //set up route to Add Item page
-app.get("/items/add", (req, res) => {
-  res.render('addItem');
+app.get("/items/add", async(req, res) => {
+  console.log("/items/add");
+  //res.render('addItem');
+  try {
+    const categories = await data.getCategories();   // Assuming getCategories() is the function to fetch categories
+    console.log(categories);
+    res.render("addItem", { categories: categories });
+  } catch (error) {
+    console.log(error);
+    res.render("addItem", { categories: [] });
+  }
 });
 
 app.post("/items/add", upload.single("featureImage"), (req, res) => {
@@ -281,7 +301,7 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
       "body":req.body.body,
       "published":req.body.published
     };
-    console.log(itemData);
+    
     data.addItem(itemData).then((addedItem)=>{
       res.redirect("/items");
     });
@@ -298,12 +318,74 @@ app.get("/categories", async (req, res) => {
     const allCategories = await data.getCategories();
     viewData.categories = allCategories;
   }catch(err){
+    console.log(err);
     viewData.message = err;
   }
-
-  res.render("categories", {data: viewData});
-
+  
+  if (viewData.categories && viewData.categories.length > 0) {
+    res.render("categories", { data: viewData });
+  } else {
+    res.render("categories", { message: "no results" });
+  }
 });
+
+//updated
+// Add the express.urlencoded() middleware
+app.use(express.urlencoded({ extended: true }));
+
+// Add the /categories/add route
+app.get("/categories/add", (req, res) => {
+  res.render("addCategory"); // Render the "addCategory" view
+});
+
+//Add the post route for /categories/add
+app.post("/categories/add", (req, res) => {
+  const categoryData = {
+    // Set the category properties based on the req.body data
+    category: req.body.category,
+  };
+
+ data.addCategory(categoryData)
+    .then(() => {
+      // Redirect to /categories upon successful addition of the category
+      res.redirect("/categories");
+    })
+    .catch((error) => {
+      // Handle the error case if addCategory() encountered an error
+      res.render("addCategory", { message: error });
+    });
+});
+
+//Add the route for /categories/delete/:id
+app.get("/categories/delete/:id", (req, res) => {
+  const categoryId = req.params.id;
+
+  data.deleteCategoryById(categoryId)
+    .then(() => {
+      // Redirect to /categories upon successful deletion
+      res.redirect("/categories");
+    })
+    .catch((error) => {
+      // Return an error response if the deletion encountered an error
+      res.status(500).send("Unable to Remove Category / Category not found");
+    });
+});
+
+//Add the route for /Items/delete/:id
+app.get("/Items/delete/:id", (req, res) => {
+  const postId = req.params.id;
+
+  data.deletePostById(postId)
+    .then(() => {
+      // Redirect to /Items upon successful deletion
+      res.redirect("/Items");
+    })
+    .catch((error) => {
+      // Return an error response if the deletion encountered an error
+      res.status(500).send("Unable to Remove Post / Post not found");
+    });
+});
+
 
 //set up for no matching route
 app.use((req, res) => {

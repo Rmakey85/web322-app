@@ -29,7 +29,7 @@
               <strong>Category:</strong>
               <a href="/items?category={{data.item.category}}">{{data.item.category}}</a><br />
               <strong>Last Updated:</strong>
-              {{data.item.postDate}}
+              {{#formatDate data.item.postDate}}{{/formatDate}}
             </div>
           </div>
         </div>

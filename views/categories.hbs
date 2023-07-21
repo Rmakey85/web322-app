@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-md-12">
-          <h2>Categories</h2>
+          <h2>Categories <a href="/categories/add" class="btn btn-success pull-right">Add Category</a></h2>
           <hr />
 
         {{#if data.categories}}
@@ -8,10 +8,11 @@
         <table class="table table-responsive">
             <thead>
                 <tr>
-                <th>Category ID</th>
+                    <th>Category ID</th>
 
-                <th>Category</th>
-
+                    <th>Category</th>
+                    <!-- Add a new empty column for the remove button -->
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -21,8 +22,10 @@
                 <td>{{id}}</td>
 
                 <td><a href="/items?category={{id}}">{{category}}</a></td>
-
-
+                <!-- Add a button in each row to remove the category -->
+                <td>
+                    <a class="btn btn-danger" href="/categories/delete/{{this.id}}">remove</a>
+                </td>
                 </tr>
                 {{/each}}
             </tbody>
@@ -31,7 +34,7 @@
 
         {{#unless data.categories}}
             <div class="col-md-12 text-center">
-                        <strong>{{data.message}}</strong>
+                        <strong>{{message}}</strong>
             </div>
         {{/unless}}
 

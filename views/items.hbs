@@ -1,45 +1,46 @@
 <div class="row">
     <div class="col-md-12">
-          <h2>Items</h2>
-          <hr />
+        <h2>Items <a href="/Items/add" class="btn btn-success pull-right">Add Item</a></h2>
+        <hr />
 
         {{#if items}}
-
-        <table class="table table-responsive">
-            <thead>
-                <tr>
-                <th>Item ID</th>
-                <th>Title</th>
-                <th>Post Date</th>
-                <th>Category</th>
-                <th>Price</th>
-                <th>Published</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each items}}
-                <tr>
-
-                <td>{{id}}</td>
-                <td>{{title}}</td>
-                <td>{{postDate}}</td>
-                <td><a href="/items?category={{category}}">{{category}}</a></td>
-                <td>{{price}}</td>
-                <td>{{published}}</td>
-
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>            
+            <table class="table table-responsive">
+                <thead>
+                    <tr>
+                    <th>Item ID</th>
+                    <th>Title</th>
+                    <th>Post Date</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Published</th>
+                    <!-- Add a new empty column for the remove button -->
+                    <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each items}}
+                        <tr>
+                            <td>{{id}}</td>
+                            <td>{{title}}</td>
+                            <td>{{#formatDate postDate}}{{/formatDate}}</td>
+                            <td><a href="/items?category={{category}}">{{category}}</a></td>
+                            <td>{{price}}</td>
+                            <td>{{published}}</td>
+                            <!-- Add a button in each row to remove the post -->
+                            <td>
+                                <a class="btn btn-danger" href="/Items/delete/{{this.id}}">remove</a>
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>            
         {{/if}}
 
         {{#unless items}}
             <div class="col-md-12 text-center">
-                        <strong>{{message}}</strong>
+                <strong>{{message}}</strong>
             </div>
         {{/unless}}
-
-            
 
     </div>
 </div>
