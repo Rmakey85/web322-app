@@ -6,6 +6,7 @@
 *  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-07-21
 *
 *  Online (Cyclic) Link: https://good-blue-fox-garb.cyclic.app/shop
+*   GitHub Repository URL: https://github.com/Rmakey85/web322-app 
 *
 ********************************************************************************/ 
 
