@@ -3,14 +3,12 @@
 *  I declare that this assignment is my own work in accordance with Seneca  Academic Policy.  No part *  of this assignment has been copied manually or electronically from any other source 
 *  (including 3rd party web sites) or distributed to other students.
 * 
-*  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-07-21
+*  Name: Razia Sultana Makey Student ID: 176841211 Date: 2023-08-07
 *
 *  Online (Cyclic) Link: https://good-blue-fox-garb.cyclic.app/shop
 *   GitHub Repository URL: https://github.com/Rmakey85/web322-app 
 *
 ********************************************************************************/ 
-
-
 
 var express = require("express");
 const multer = require("multer");
@@ -20,11 +18,32 @@ const data = require("./store-service");
 const path = require("path");
 const exphbs = require('express-handlebars');
 const { Console } = require("console");
-
+const authData = require("./auth-service");
+const clientSessions = require("client-sessions" )
 
 var app = express();
 
 const HTTP_PORT = process.env.PORT || 8080;
+
+app.use(clientSessions({
+  cookieName: "session", 
+  secret: "assignment6_web322", 
+  duration: 2 * 60 * 1000, 
+  activeDuration: 1000 * 60
+}));
+
+app.use(function(req, res, next) {
+  res.locals.session = req.session;
+  next();
+});
+
+function ensureLogin(req, res, next) {
+  if (!req.session.user) {
+    res.redirect("/login");
+  } else {
+    next();
+  }
+}
 
 app.engine('.hbs', exphbs.engine({ 
   extname: '.hbs',
@@ -138,7 +157,7 @@ app.get("/shop", async (req, res) => {
 });
 
 
-app.get('/shop/:id', async (req, res) => {
+app.get('/shop/:id',  async (req, res) => {
 
 
   // Declare an object to store properties for the view
@@ -190,7 +209,7 @@ app.get('/shop/:id', async (req, res) => {
 });
 
 //set up route to items page along with filters
-app.get("/items", async (req, res) => {
+app.get("/items", ensureLogin, async (req, res) => {
 
   console.log("/items");
 
@@ -231,7 +250,7 @@ app.get("/items", async (req, res) => {
 
 //updated
 //set up route to Add Item page
-app.get("/items/add", async(req, res) => {
+app.get("/items/add", ensureLogin, async(req, res) => {
   console.log("/items/add");
   //res.render('addItem');
   try {
@@ -244,8 +263,7 @@ app.get("/items/add", async(req, res) => {
   }
 });
 
-app.post("/items/add", upload.single("featureImage"), (req, res) => {
-
+app.post("/items/add", ensureLogin, upload.single("featureImage"), (req, res) => {
     if(req.file){
       let streamUpload = (req) => {
           return new Promise((resolve, reject) => {
@@ -311,7 +329,7 @@ app.post("/items/add", upload.single("featureImage"), (req, res) => {
 
 
 //set up route to categories page
-app.get("/categories", async (req, res) => {
+app.get("/categories", ensureLogin, async (req, res) => {
 
   let viewData = {};
 
@@ -335,12 +353,12 @@ app.get("/categories", async (req, res) => {
 app.use(express.urlencoded({ extended: true }));
 
 // Add the /categories/add route
-app.get("/categories/add", (req, res) => {
+app.get("/categories/add", ensureLogin, (req, res) => {
   res.render("addCategory"); // Render the "addCategory" view
 });
 
 //Add the post route for /categories/add
-app.post("/categories/add", (req, res) => {
+app.post("/categories/add", ensureLogin, (req, res) => {
   const categoryData = {
     // Set the category properties based on the req.body data
     category: req.body.category,
@@ -358,7 +376,7 @@ app.post("/categories/add", (req, res) => {
 });
 
 //Add the route for /categories/delete/:id
-app.get("/categories/delete/:id", (req, res) => {
+app.get("/categories/delete/:id", ensureLogin, (req, res) => {
   const categoryId = req.params.id;
 
   data.deleteCategoryById(categoryId)
@@ -373,7 +391,7 @@ app.get("/categories/delete/:id", (req, res) => {
 });
 
 //Add the route for /Items/delete/:id
-app.get("/Items/delete/:id", (req, res) => {
+app.get("/Items/delete/:id", ensureLogin, (req, res) => {
   const postId = req.params.id;
 
   data.deletePostById(postId)
@@ -387,6 +405,72 @@ app.get("/Items/delete/:id", (req, res) => {
     });
 });
 
+//Update
+//set up a route for login view
+app.get("/login", function(req, res) {
+  res.render("login");
+});
+
+//set up a route for register view
+app.get("/register", function(req, res) {
+  res.render("register");
+});
+
+// set up a route for post register
+app.post("/register", (req, res) => {
+  const userData = {
+    userName: req.body.userName,
+    password: req.body.password,
+    password2: req.body.password2,
+    email: req.body.email,
+  };
+
+  authData.registerUser(userData)
+    .then(() => {
+      res.render("register", { successMessage: "User created" });
+    })
+    .catch((err) => {
+      res.render("register", { errorMessage: err, userName: req.body.userName, email: req.body.email });
+    });
+});
+
+//Updated POST /login route
+app.post("/login", (req, res) => {
+  // Set the value of the client's "User-Agent" to the request body
+  req.body.userAgent = req.get('User-Agent');
+
+  const userData = {
+    userName: req.body.userName,
+    password: req.body.password,
+    userAgent: req.body.userAgent
+  };
+
+  authData.checkUser(userData)
+    .then((user) => {
+      // Add authenticated user's data to the session
+      req.session.user = {
+        userName: user.userName,
+        email: user.email,
+        loginHistory: user.loginHistory
+      };
+
+      res.redirect('/items');
+    }).catch((err) => {
+      res.render("login", { errorMessage: err, userName: req.body.userName });
+    });
+});
+
+//set up the route for logout
+app.get("/logout", function(req, res) {
+  req.session.reset();
+  res.redirect("/");
+});         
+
+//set up the route to renders the "userHistory" view
+app.get("/userHistory", ensureLogin, (req, res) => {
+  res.render("userHistory");
+});
+
 
 //set up for no matching route
 app.use((req, res) => {
@@ -395,10 +479,14 @@ app.use((req, res) => {
 });
 
 data.initialize()
+.then(authData.initialize)
 .then(function(){
-  app.listen(HTTP_PORT, onHTTPSTART);
+  app.listen(HTTP_PORT, function(){
+      console.log("app listening on: " + HTTP_PORT)
+  });
+
 })
 .catch(function(err){
- console.log(err);
+  console.log("unable to start server: " + err);
 });
 

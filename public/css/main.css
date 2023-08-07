@@ -20,3 +20,7 @@ font-weight: 700;
 .navbar{
     background: #B10DC9;
 }
+
+.container{
+  max-width: 1140px;
+}
